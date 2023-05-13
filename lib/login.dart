@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import './main_page.dart';
 // import './services/login_service.dart';
-// import './model/login_model.dart';
+import './model/login_model.dart';
 import 'dart:convert';
 import 'package:http/http.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -44,9 +44,10 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  void login(String email, password) async {
+  Future<User> login(String email, password) async {
     try {
-      Response response = await post(Uri.http('localhost:10000/api/v1/login'),
+      
+      Response response = await post(Uri.parse('https://localhost:10000/api/v1/login'),
           body: {'email': email, 'password': password});
 
       var data = jsonDecode(response.body.toString());
@@ -66,14 +67,17 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               (Route<dynamic> route) => false);
         });
+        return User.fromJson(data.decoder(response.body));
       } else {
         setState(() {
           _isLoading = false;
           _showMyDialog(data['message']);
         });
+        throw Exception('Failed to login');
       }
     } catch (e) {
       print(e.toString());
+      throw Exception('Error'+e.toString());
     }
   }
 

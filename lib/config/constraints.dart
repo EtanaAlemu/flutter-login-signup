@@ -1,0 +1,3 @@
+class Constraints {
+  Constraints._();
+}
