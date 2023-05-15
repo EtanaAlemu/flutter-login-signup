@@ -2,46 +2,32 @@
 
 // To parse this JSON data, do
 //
-//     final user = userFromJson(jsonString);
+//     final loginResponse = loginResponseFromJson(jsonString);
 
 import 'dart:convert';
 
-User userFromJson(String str) {
+LoginResponse loginResponseFromJson(String str) {
   final jsonData = json.decode(str);
-  return User.fromJson(jsonData);
+  return LoginResponse.fromJson(jsonData);
 }
 
-String userToJson(User data) {
+String loginResponseToJson(LoginResponse data) {
   final dyn = data.toJson();
   return json.encode(dyn);
 }
 
-List<User> allUsersFromJson(String str) {
-  final jsonData = json.decode(str);
-  return new List<User>.from(jsonData.map((x) => User.fromJson(x)));
-}
+class LoginResponse {
+  String token;
 
-String allUsersToJson(List<User> data) {
-  final dyn = new List<dynamic>.from(data.map((x) => x.toJson()));
-  return json.encode(dyn);
-}
-
-class User {
-  String email;
-  String password;
-
-  User({
-    required this.email,
-    required this.password,
+  LoginResponse({
+    required this.token
   });
 
-  factory User.fromJson(Map<String, dynamic> json) => new User(
-        email: json["email"],
-        password: json["password"],
+  factory LoginResponse.fromJson(Map<String, dynamic> json) => LoginResponse(
+        token: json["token"],
       );
 
   Map<String, dynamic> toJson() => {
-        "email": email,
-        "password": password,
+        "token": token,
       };
 }

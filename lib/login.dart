@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:login_and_register_with_api/services/api_response.dart';
 import './main_page.dart';
-// import './services/login_service.dart';
+import './services/login_service.dart';
 import './model/login_model.dart';
 import 'dart:convert';
 import 'package:http/http.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+
+import 'services/api_error.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -44,40 +47,39 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  Future<User> login(String email, password) async {
+  
+  void login() async {
     try {
-      
-      Response response = await post(Uri.parse('https://localhost:10000/api/v1/login'),
-          body: {'email': email, 'password': password});
-
-      var data = jsonDecode(response.body.toString());
-      if (response.statusCode == 200) {
-        print(data['token']);
-        print('Login successfully');
-
-        // Create storage
-        final storage = new FlutterSecureStorage();
+     var _apiResponse = await authenticateUser(
+          _emailTextController.text.toString(),
+          _passwordTextController.text.toString());
+      if ((_apiResponse.ApiError as ApiError) == null) {
+       final storage = new FlutterSecureStorage();
         setState(() {
           _isLoading = false;
           // Write value
-          storage.write(key: 'jwt', value: data['token']);
+          LoginResponse res = _apiResponse.Data as LoginResponse;
+          storage.write(key: 'jwt', value: res.token);
           Navigator.of(context).pushAndRemoveUntil(
               MaterialPageRoute(
                 builder: (BuildContext context) => MainPageScreen(),
               ),
               (Route<dynamic> route) => false);
         });
-        return User.fromJson(data.decoder(response.body));
       } else {
         setState(() {
           _isLoading = false;
-          _showMyDialog(data['message']);
+          _showMyDialog((_apiResponse.ApiError as ApiError).error);
         });
-        throw Exception('Failed to login');
       }
+    
+  
     } catch (e) {
       print(e.toString());
-      throw Exception('Error'+e.toString());
+        setState(() {
+          _isLoading = false;
+          _showMyDialog(e.toString());
+        });
     }
   }
 
@@ -113,9 +115,17 @@ class _LoginScreenState extends State<LoginScreen> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   TextFormField(
-                    controller: _emailTextController,
-                    decoration: InputDecoration(labelText: 'Email'),
-                  ),
+                      controller: _emailTextController,
+                      decoration: InputDecoration(labelText: 'Email'),
+                      keyboardType: TextInputType.emailAddress,
+                      validator: (String? value) {
+                        if (value != null && value.isEmpty) {
+                          return "Email can't be empty";
+                        }
+
+                        return null;
+                      }
+                      ),
                   SizedBox(
                     height: 20,
                   ),
@@ -141,7 +151,14 @@ class _LoginScreenState extends State<LoginScreen> {
                     ),
                     obscureText: !_passwordVisible,
                     enableSuggestions: false,
-                    autocorrect: false,
+                    autocorrect: false,validator: (String? value) {
+                        if (value != null && value.isEmpty) {
+                          return "Password is required";
+                        }
+
+                        return null;
+                      },
+                    
                   ),
                   SizedBox(
                     height: 40,
@@ -151,13 +168,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       setState(() {
                         _isLoading = true;
                       });
-                      login(_emailTextController.text.toString(),
-                          _passwordTextController.text.toString());
-                      // login(
-                      //   new User(
-                      //       email: _emailTextController.text.toString(),
-                      //       password: _passwordTextController.text.toString()),
-                      // );
+                      login();
                     },
                     child: Container(
                       height: 50,
