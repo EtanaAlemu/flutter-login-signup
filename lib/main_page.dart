@@ -1,5 +1,3 @@
-import 'package:flutter/src/widgets/framework.dart';
-import 'package:flutter/src/widgets/placeholder.dart';
 import 'package:flutter/material.dart';
 
 class MainPageScreen extends StatefulWidget {
@@ -9,15 +7,15 @@ class MainPageScreen extends StatefulWidget {
   _MainPageScreenState createState() => _MainPageScreenState();
 }
 
-
 class _MainPageScreenState extends State<MainPageScreen> {
   @override
   Widget build(BuildContext context) {
-      return Scaffold(
-      appBar: AppBar(
-        title: const Text('Main Page'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),));
+    return Scaffold(
+        appBar: AppBar(
+          title: const Text('Main Page'),
+        ),
+        body: Padding(
+          padding: const EdgeInsets.all(20.0),
+        ));
   }
 }

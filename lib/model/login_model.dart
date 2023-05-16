@@ -1,9 +1,3 @@
-// Created using https://app.quicktype.io/
-
-// To parse this JSON data, do
-//
-//     final loginResponse = loginResponseFromJson(jsonString);
-
 import 'dart:convert';
 
 LoginResponse loginResponseFromJson(String str) {
@@ -19,9 +13,7 @@ String loginResponseToJson(LoginResponse data) {
 class LoginResponse {
   String token;
 
-  LoginResponse({
-    required this.token
-  });
+  LoginResponse({required this.token});
 
   factory LoginResponse.fromJson(Map<String, dynamic> json) => LoginResponse(
         token: json["token"],
