@@ -12,6 +12,7 @@ class SignInProvider extends ChangeNotifier {
 
   var data;
   Future<void> postData(SignInBody body) async {
+    print(body.toJson());
     loading = true;
     notifyListeners();
     http.Response response = (await login(body))!;

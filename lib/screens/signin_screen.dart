@@ -2,30 +2,25 @@ import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 import 'package:login_and_register_with_api/model/signin_model.dart';
 import 'package:login_and_register_with_api/providers/signin_provider.dart';
-import 'package:login_and_register_with_api/main_page.dart';
-import 'package:login_and_register_with_api/providers/signup_provider.dart';
-import 'package:login_and_register_with_api/screens/login.dart';
-import 'package:login_and_register_with_api/screens/signup_confirmtion.dart';
+import 'package:login_and_register_with_api/screens/signup_screen.dart';
+import 'package:login_and_register_with_api/screens/token_screen.dart';
+import 'package:login_and_register_with_api/utils/secure_storage.dart';
 
 import 'package:provider/provider.dart';
 
-import '../model/signup_model.dart';
-
-class SignupScreen extends StatefulWidget {
-  const SignupScreen({Key? key}) : super(key: key);
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({Key? key}) : super(key: key);
   static of(BuildContext context, {bool root = false}) => root
-      ? context.findRootAncestorStateOfType<_SignupScreenState>()
-      : context.findAncestorStateOfType<_SignupScreenState>();
+      ? context.findRootAncestorStateOfType<_LoginScreenState>()
+      : context.findAncestorStateOfType<_LoginScreenState>();
 
   @override
-  _SignupScreenState createState() => _SignupScreenState();
+  _LoginScreenState createState() => _LoginScreenState();
 }
 
-class _SignupScreenState extends State<SignupScreen> {
-  TextEditingController _usernameTextController = TextEditingController();
-  TextEditingController _emailTextController = TextEditingController();
-  TextEditingController _passwordTextController = TextEditingController();
-
+class _LoginScreenState extends State<LoginScreen> {
+  TextEditingController _emailController = TextEditingController();
+  TextEditingController _passwordController = TextEditingController();
   bool _passwordVisible = false;
 
   _showMyDialog(msg) async {
@@ -49,19 +44,24 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 
-  Future<void> _signup() async {
-    String username = _usernameTextController.text.trim();
-    String email = _emailTextController.text.trim();
-    String password = _passwordTextController.text.trim();
-    SignUpBody signUpBody =
-        SignUpBody(username: username, email: email, password: password);
-    var provider = Provider.of<SignUpProvider>(context, listen: false);
-    await provider.postData(signUpBody);
+  void _login() async {
+    String email = _emailController.text.trim();
+    String password = _passwordController.text.trim();
+
+    SignInBody signInBody = SignInBody(email: email, password: password);
+    print(
+        "===================================================================");
+    var provider = Provider.of<SignInProvider>(context, listen: false);
+    await provider.postData(signInBody);
     if (provider.isBack) {
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => SignupConfirmtionPage()),
+        MaterialPageRoute(builder: (context) => TokenPage()),
       );
+
+      SecureStorage.putString("token", provider.data["token"]);
+      SecureStorage.putString("email", email);
+      SecureStorage.putString("password", password);
     } else {
       _showMyDialog(provider.data["message"]);
     }
@@ -70,17 +70,15 @@ class _SignupScreenState extends State<SignupScreen> {
   @override
   void initState() {
     super.initState();
-    _usernameTextController.text = "test";
-    _emailTextController.text = "test@gmail.com";
-    _passwordTextController.text = "123456";
+    _emailController.text = "etanaalemunew@gmail.com";
+    _passwordController.text = "Eviot@10908";
     _passwordVisible = false;
   }
 
   @override
   void dispose() {
-    _usernameTextController.dispose();
-    _emailTextController.dispose();
-    _passwordTextController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
@@ -88,7 +86,7 @@ class _SignupScreenState extends State<SignupScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: const Text('Signup'),
+          title: const Text('Login'),
         ),
         body: Consumer<SignInProvider>(builder: (context, data, child) {
           return data.loading
@@ -113,21 +111,7 @@ class _SignupScreenState extends State<SignupScreen> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       TextFormField(
-                          controller: _usernameTextController,
-                          decoration: InputDecoration(labelText: 'Username'),
-                          keyboardType: TextInputType.name,
-                          validator: (String? value) {
-                            if (value != null && value.isEmpty) {
-                              return "Username can't be empty";
-                            }
-
-                            return null;
-                          }),
-                      SizedBox(
-                        height: 20,
-                      ),
-                      TextFormField(
-                          controller: _emailTextController,
+                          controller: _emailController,
                           decoration: InputDecoration(labelText: 'Email'),
                           keyboardType: TextInputType.emailAddress,
                           validator: (String? value) {
@@ -141,7 +125,7 @@ class _SignupScreenState extends State<SignupScreen> {
                         height: 20,
                       ),
                       TextFormField(
-                        controller: _passwordTextController,
+                        controller: _passwordController,
                         decoration: InputDecoration(
                           labelText: 'Password',
                           suffixIcon: IconButton(
@@ -172,45 +156,11 @@ class _SignupScreenState extends State<SignupScreen> {
                         },
                       ),
                       SizedBox(
-                        height: 20,
-                      ),
-                      TextFormField(
-                        controller: _passwordTextController,
-                        decoration: InputDecoration(
-                          labelText: 'Confirm Password',
-                          suffixIcon: IconButton(
-                            icon: Icon(
-                              // Based on passwordVisible state choose the icon
-                              _passwordVisible
-                                  ? Icons.visibility
-                                  : Icons.visibility_off,
-                              color: Theme.of(context).primaryColorDark,
-                            ),
-                            onPressed: () {
-                              // Update the state i.e. toogle the state of passwordVisible variable
-                              setState(() {
-                                _passwordVisible = !_passwordVisible;
-                              });
-                            },
-                          ),
-                        ),
-                        obscureText: !_passwordVisible,
-                        enableSuggestions: false,
-                        autocorrect: false,
-                        validator: (String? value) {
-                          if (value != null && value.isEmpty) {
-                            return "Confirm Password is required";
-                          }
-
-                          return null;
-                        },
-                      ),
-                      SizedBox(
                         height: 40,
                       ),
                       GestureDetector(
                         onTap: () {
-                          _signup();
+                          _login();
                         },
                         child: Container(
                           height: 50,
@@ -218,7 +168,7 @@ class _SignupScreenState extends State<SignupScreen> {
                               color: Colors.green,
                               borderRadius: BorderRadius.circular(10)),
                           child: Center(
-                            child: Text('Signup'),
+                            child: Text('Login'),
                           ),
                         ),
                       ),
@@ -230,7 +180,7 @@ class _SignupScreenState extends State<SignupScreen> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                                builder: (context) => LoginScreen()),
+                                builder: (context) => SignupScreen()),
                           );
                         },
                         child: Container(
@@ -239,7 +189,7 @@ class _SignupScreenState extends State<SignupScreen> {
                               color: Colors.green,
                               borderRadius: BorderRadius.circular(10)),
                           child: Center(
-                            child: Text('I have account'),
+                            child: Text('I wanna create account'),
                           ),
                         ),
                       )

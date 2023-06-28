@@ -3,10 +3,11 @@ import 'dart:convert';
 import 'package:login_and_register_with_api/model/token_model.dart';
 import 'package:http/http.dart' as http;
 
+import 'package:login_and_register_with_api/config/constraints.dart';
+
 class TokenService {
   Future<List<Token>> getTokens() async {
-    final respose =
-        await http.get(Uri.parse("http://localhost:10000/api/v1/tokens"));
+    final respose = await http.get(Uri.parse(BASE_URL + TOKENS));
 
     if (respose.statusCode == 200) {
       final data = jsonDecode(respose.body);

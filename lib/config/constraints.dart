@@ -1,6 +1,5 @@
-class Constraints {
-  Constraints._();
-  static const BASE_URL = "https://127.0.0.1:10000";
-  static const LOGIN = "/api/v1/login";
-  static const SIGNUP = "/api/v1/register";
-}
+const BASE_URL = "http://192.168.200.175:10000";
+
+const LOGIN = "/api/v1/login";
+const SIGNUP = "/api/v1/register";
+const TOKENS = "/api/v1/tokens";
